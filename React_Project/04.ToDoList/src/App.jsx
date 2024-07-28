@@ -15,7 +15,7 @@ function App() {
   });
   const [mainTask, setMainTask] = useState([]);
   const [completeToDo, setCompleteToDo] = useState([]);
-  // const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     getSaveToDoFromLocalStore();
@@ -46,7 +46,7 @@ function App() {
           ...mainTask,
           { title: todoListState.title, desc: todoListState.desc },
         ];
-        setMainTask(newtask)
+        setMainTask(newtask);
         setTodoListState({ ...todoListState, title: "", desc: "" });
         saveToDoInLocalStore(newtask, completeToDo);
       }
@@ -56,6 +56,7 @@ function App() {
         error: "Both title and description are required.",
       }));
     }
+    setSearchTerm(""); // Reset search term after submission
   };
 
   // Edit Handler
@@ -72,10 +73,10 @@ function App() {
 
   // Delete Handler
   const deleteHandler = (index, isCompleted) => {
-    if(isCompleted) {
-    const updatedCompletedTasks = completeToDo.filter((_, i) => i !== index);
-    setCompleteToDo(updatedCompletedTasks);
-    saveToDoInLocalStore(mainTask, updatedCompletedTasks);
+    if (isCompleted) {
+      const updatedCompletedTasks = completeToDo.filter((_, i) => i !== index);
+      setCompleteToDo(updatedCompletedTasks);
+      saveToDoInLocalStore(mainTask, updatedCompletedTasks);
     } else {
       let updatedMainTasks = mainTask.filter((_, i) => i !== index);
       setMainTask(updatedMainTasks);
@@ -101,7 +102,7 @@ function App() {
 
     let updatedCompletedArr = [...completeToDo, completedItem];
     setCompleteToDo(updatedCompletedArr);
-    const updatedTasks = mainTask.filter((_,i) => i !== index);
+    const updatedTasks = mainTask.filter((_, i) => i !== index);
     setMainTask(updatedTasks);
     saveToDoInLocalStore(updatedTasks, updatedCompletedArr);
   };
@@ -109,22 +110,26 @@ function App() {
   // Save ToDo List Data in Local Storage
   const saveToDoInLocalStore = (mainTasks, completeDTasks) => {
     const tasks = {
-      mainTask : mainTasks,
-      completeToDo : completeDTasks,
-    }
+      mainTask: mainTasks,
+      completeToDo: completeDTasks,
+    };
     localStorage.setItem("tasks", JSON.stringify(tasks));
   };
-  
+
   // Get Save ToDo List Data From Local Storage & Set the Data in Main Task
   const getSaveToDoFromLocalStore = () => {
     let data = JSON.parse(localStorage.getItem("tasks")) || {
-      mainTask : [],
-      completeToDo : [],
+      mainTask: [],
+      completeToDo: [],
     };
     // console.log(Data);
     setMainTask(data.mainTask);
     setCompleteToDo(data.completeToDo);
   };
+
+  const filteredTasks = mainTask.filter((task) =>
+    task.title.toLowerCase().trim().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="bg-gradient-to-r from-indigo-500 from-10% via-sky-500 via-30% to-emerald-500 to-90% w-full h-screen">
@@ -180,10 +185,8 @@ function App() {
               type="text"
               className="border-zinc-800 border-2 m-5 w-[53.7vw] text-black font-bold px-2 py-2 shadow-lg"
               placeholder="Enter Title here"
-              value={todoListState.title}
-              onChange={(e) =>
-                setTodoListState({ ...todoListState, title: e.target.value })
-              }
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)} // Updated onChange
             />
           </div>
           {/* Button */}
@@ -215,8 +218,8 @@ function App() {
             </tr>
           </thead>
           <tbody className="w-full">
-            {mainTask.length > 0
-              ? mainTask.map((data, index) => (
+            {filteredTasks.length > 0 // Updated to use filteredTasks
+              ? filteredTasks.map((data, index) => (
                   <tr
                     key={index}
                     className="border font-extrabold bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500"
@@ -310,7 +313,7 @@ function App() {
                         className="rounded-lg py-2 px-4 font-extrabold bg-blue-400 hover:bg-red-600 text-white"
                         onClick={() => deleteHandler(index, true)}
                       >
-                          <RiDeleteBinFill />
+                        <RiDeleteBinFill />
                       </button>
                     </td>
                   </tr>
